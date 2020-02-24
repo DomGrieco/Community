@@ -38,6 +38,7 @@
     - { role: gitea, tags: ['gitea'] }
     - { role: glances, tags: ['glances'] }
     - { role: goplaxt, tags: ['goplaxt'] }
+    - { role: gotify, tags: ['gotify'] }
     - { role: guacamole, tags: ['guacamole'] }
     - { role: handbrake, tags: ['handbrake'] }
     - { role: heimdall, tags: ['heimdall'] }
@@ -59,6 +60,7 @@
     - { role: nextcloud, tags: ['nextcloud'] }
     - { role: nowshowing, tags: ['nowshowing'] }
     - { role: nzbhydra, tags: ['nzbhydra'] }
+    - { role: ombix, tags: ['ombix'] }
     - { role: organizrv1, tags: ['organizrv1'] }
     - { role: ouroboros, tags: ['ouroboros'] }
     - { role: jdownloader2, tags: ['jdownloader2'] }

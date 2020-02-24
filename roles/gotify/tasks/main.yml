@@ -1,8 +1,8 @@
 #########################################################################
-# Title:            Community: Calibre-Web                              #
-# Author(s):        Superduper09, -SK                                   #
+# Title:            Community: Gotify-server                            #
+# Author(s):        Bas                                                 #
 # URL:              https://github.com/Cloudbox/Community               #
-# Docker Image(s):  linuxserver/calibre-web                             #
+# Docker Image(s):  gotify/server                                       #
 # --                                                                    #
 #         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
@@ -13,47 +13,49 @@
   include_role:
     name: cloudflare-dns
   vars:
-    record: books
+    record: gotify
   when: cloudflare_enabled
 
 - name: Stop and remove any existing container
   docker_container:
-    name: calibre-web
+    name: gotify
     state: absent
 
-- name: Create calibre directories
-  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+- name: Create gotify-server directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }} recurse=yes"
   with_items:
-   - /opt/calibre-web
+    - /opt/gotify
+    - /opt/gotify/config
 
 - name: Create and start container
   docker_container:
-    name: calibre-web
-    image: linuxserver/calibre-web
+    name: gotify
+    image: gotify/server
     pull: yes
-    published_ports:
-      - "127.0.0.1:8083:8083"
     env:
       TZ: "{{ tz }}"
-      PUID: "{{ uid }}"
-      GUID: "{{ gid }}"
-      VIRTUAL_HOST: "books.{{ user.domain }}"
-      VIRTUAL_PORT: "8083"
-      LETSENCRYPT_HOST: "books.{{ user.domain }}"
+      VIRTUAL_HOST: "gotify.{{ user.domain }}"
+      VIRTUAL_PORT: "80"
+      LETSENCRYPT_HOST: "gotify.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
-      USE_CONFIG_DIR: "true"
-      DOCKER_MODS: linuxserver/calibre-web:calibre
+      GOTIFY_DEFAULTUSER_NAME: "{{ user.name }}"
+      GOTIFY_DEFAULTUSER_PASS: "{{ user.pass }}"
     volumes:
-      - "/mnt/unionfs/Media/Books:/books"
-      - "/opt/calibre-web/config:/config"
-      - "/opt/calibre-web:/calibre-web"
-      - "/mnt:/mnt"
+      - "/opt/gotify/config:/app/data"
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
     networks:
       - name: cloudbox
         aliases:
-          - calibre-web
-    purge_networks: yes
+          - gotify
     restart_policy: unless-stopped
     state: started
+
+- name: "Wait for 30 seconds"
+  wait_for:
+    timeout: 30
+
+- name: Reset gotify-server directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }} recurse=yes"
+  with_items:
+    - /opt/gotify

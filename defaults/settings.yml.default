@@ -5,6 +5,8 @@ radarrx:
   roles: [1080webdl, 1080remux]
 bazarrx:
   roles: [1080webdl, 1080remux]
+ombix:
+  roles: [4k]
 calibreweb:
   caliblur: yes
 goplaxt:
@@ -15,6 +17,7 @@ bookstack:
 invoiceninja:
   subdomain: invoiceninja
 wordpress:
+  direct_domain: no
   subdomain: wordpress
 gitea:
   subdomain: git
