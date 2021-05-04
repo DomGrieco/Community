@@ -1,20 +1,25 @@
 #########################################################################
-# Title:            Community: FileBot                                  #
-# Author(s):        atilling                                            #
+# Title:            Community: SmokePing                                #
+# Author(s):        mariosemes                                          #
 # URL:              https://github.com/Cloudbox/Community               #
-# Docker Image(s):  jlesage/filebot                                     #
+# Docker Image(s):  linuxserver/smokeping                               #
 # --                                                                    #
 #         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
 #                   GNU General Public License v3.0                     #
 #########################################################################
 ---
-- name: "Setting CloudFlare DNS Record"
+- name: "Set DNS Record on CloudFlare"
   include_role:
     name: cloudflare-dns
   vars:
-    record: filebot
+    record: smokeping
   when: cloudflare_enabled
+
+- name: Stop and remove any existing container
+  docker_container:
+    name: smokeping
+    state: absent
 
 - name: Create htpasswd
   htpasswd:
@@ -25,45 +30,36 @@
     group: "{{ user.name }}"
     mode: 0664
   with_items:
-    - filebot
+    - smokeping
 
-- name: Stop and remove any existing container
-  docker_container:
-    name: filebot
-    state: absent
-
-- name: Create filebot directories
-  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
+- name: Create smokeping directories
+  file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }} recurse=yes"
   with_items:
-    - /opt/filebot
+      - /opt/smokeping/config/
+      - /opt/smokeping/data/
 
 - name: Create and start container
   docker_container:
-    name: filebot
-    image: jlesage/filebot
+    name: smokeping
+    image: "linuxserver/smokeping"
     pull: yes
+    exposed_ports:
+      - 80
     env:
       TZ: "{{ tz }}"
-      USER_ID: "{{ uid }}"
-      GROUP_ID: "{{ gid }}"
-      VIRTUAL_HOST: "filebot.{{ user.domain }}"
-      VIRTUAL_PORT: "5800"
-      LETSENCRYPT_HOST: "filebot.{{ user.domain }}"
+      PUID: "{{ uid }}"
+      PGID: "{{ gid }}"
+      VIRTUAL_HOST: "smokeping.{{ user.domain }}"
+      VIRTUAL_PORT: "80"
+      LETSENCRYPT_HOST: "smokeping.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
     volumes:
-      - "/opt/filebot:/config"
-      - "/mnt:/mnt"
-      - "/mnt/unionfs/Media/TV:/storage/Media/TV Shows"
-      - "/mnt/unionfs/Media/Movies:/storage/Media/Movies"
-      - "/mnt/local/downloads:/storage/downloads"
-    labels:
-      "com.github.cloudbox.cloudbox_managed": "true"
+      - "/opt/smokeping/config:/config"
+      - "/opt/smokeping/data:/data"
     networks:
       - name: cloudbox
         aliases:
-          - filebot
-    exposed_ports:
-      - 5800
+          - smokeping
     purge_networks: yes
     restart_policy: unless-stopped
     state: started

@@ -16,6 +16,8 @@ Community Repository for Unofficial Cloudbox Add-ons
 
 ## Roles
 
+This is a partial list of roles available via Community; once the repo is installed,`sudo ansible-playbook community.yml --list-tags` will show you all available roles.
+
 - **[arrX](../../wiki/arrX)** - Create multiple Sonarr/Radarr/Bazarr Docker containers.
 - **airsonic**
 - **[alltube](../../wiki/alltube)** - [alltube](https://github.com/Rudloff/alltube) HTML GUI for youtube-dl.
@@ -54,10 +56,13 @@ Community Repository for Unofficial Cloudbox Add-ons
 - **[jdownloader2](../../wiki/JDownloader2)** - [JDownloader2](https://github.com/jlesage/docker-jdownloader-2) Self-hosted free, open-source download management tool with GUI website frontend.
 - **mylar** - automated comic book downloader
 - **mylar3** - newest version of the automated comic book downloader, migrated to python 3. Actively developed.
+- **Overseerr** - Plex request management and media discovery tool
+- **OverseerrX** - To create multiple Overseerr roles
 - **[qBittorrent](../../wiki/qBittorrent)** - qBittorrent torrent client
 - **radarr1080** - Additional Radarr
 - **radarrX** - Similar to [sonarrX](../../wiki/SonarrX) but for radarr, to create multiple roles
 - **Red Discord Bot** - A customisible self-hosted Discord Bot
+- **[SmokePing](https://hub.docker.com/r/linuxserver/smokeping)** - Smokeping keeps track of your network latency.
 - **sonarr1080** - Additional Sonarr
 - **sonarrv3** - Sonar phantom (v3) branch based role
 - **[sonarrX](../../wiki/SonarrX)** - Experimental Sonarr v3 role to create multiple roles
