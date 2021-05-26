@@ -1,8 +1,8 @@
 #########################################################################
-# Title:            Community: Calibre                                  #
-# Author(s):        Andrew Johnson and SK                               #
+# Title:            Community: MKVToolNix                               #
+# Author(s):        edzeg (w/ TABLE's source and salty's help debugging)#
 # URL:              https://github.com/Cloudbox/Community               #
-# Docker Image(s):  linuxserver/calibre                                 #
+# Docker Image(s):  jlesage/mkvtoolnix                                  #
 # --                                                                    #
 #         Part of the Cloudbox project: https://cloudbox.works          #
 #########################################################################
@@ -13,58 +13,55 @@
   include_role:
     name: cloudflare-dns
   vars:
-    record: calibre
+    record: mkvtoolnix
   when: cloudflare_enabled
 
 - name: Stop and remove any existing container
   docker_container:
-    name: calibre
+    name: mkvtoolnix
     state: absent
+
+- name: Lookup htpasswd
+  stat:
+    path: "/opt/nginx-proxy/htpasswd/mkvtoolnix.{{ user.domain }}"
+  register: htpasswd_lookup
 
 - name: Create htpasswd
   htpasswd:
-    path: "/opt/nginx-proxy/htpasswd/{{ item }}.{{ user.domain }}"
+    path: "/opt/nginx-proxy/htpasswd/mkvtoolnix.{{ user.domain }}"
     name: "{{ user.name }}"
     password: "{{ user.pass }}"
     owner: "{{ user.name }}"
     group: "{{ user.name }}"
     mode: 0664
-  with_items:
-    - calibre
+  when: not htpasswd_lookup.stat.exists
 
-- name: Create calibre directories
+- name: Create opt directory
   file: "path={{ item }} state=directory mode=0775 owner={{ user.name }} group={{ user.name }}"
   with_items:
-   - /opt/calibre
-   - /mnt/local/Media/Books
+    - /opt/mkvtoolnix
 
 - name: Create and start container
   docker_container:
-    name: calibre
-    image: linuxserver/calibre
+    name: mkvtoolnix
+    image: jlesage/mkvtoolnix:latest
     pull: yes
     env:
       TZ: "{{ tz }}"
-      PUID: "{{ uid }}"
-      PGID: "{{ gid }}"
-      LIBRARYINTERNALPATH: "/library"
-      VIRTUAL_HOST: "calibre.{{ user.domain }}"
-      VIRTUAL_PORT: "8080"
-      LETSENCRYPT_HOST: "calibre.{{ user.domain }}"
+      USER_ID: "{{ uid }}"
+      GROUP_ID: "{{ gid }}"
+      VIRTUAL_HOST: "mkvtoolnix.{{ user.domain }}"
+      VIRTUAL_PORT: "5800"
+      LETSENCRYPT_HOST: "mkvtoolnix.{{ user.domain }}"
       LETSENCRYPT_EMAIL: "{{ user.email }}"
     volumes:
-      - "/opt/calibre:/config"
-      - "/mnt/unionfs/Media/Books:/library"
-      - "/mnt:/mnt"
+      - "/opt/mkvtoolnix:/config"
+      - "/mnt/unionfs:/storage"
     labels:
       "com.github.cloudbox.cloudbox_managed": "true"
     networks:
       - name: cloudbox
         aliases:
-          - calibre
-    exposed_ports:
-      - 8080
-      - 8081
-    purge_networks: yes
+          - mkvtoolnix
     restart_policy: unless-stopped
     state: started
